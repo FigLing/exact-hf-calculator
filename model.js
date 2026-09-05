@@ -252,5 +252,8 @@ window.EXACTHF_MODEL = {
     "development": "3 hospitals (NUH, NHC, CGH), n=4,034; trained on the 3,227-patient train split",
     "external_validation": "5 independent hospitals (KTPH, NTFGH, SGH, TTSH, WHC), n=5,016",
     "note": "Coefficients apply to standardised inputs; see preprocess for median imputation, winsorising bounds and scaler constants."
-  }
+  },
+  "version": "1.0.0",
+  "digest": "506685a9914f",
+  "generated": "2026-09-05"
 };
