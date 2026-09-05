@@ -3,281 +3,227 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EXACT-HF Bedside Risk Calculator</title>
-<meta name="description" content="Ten-variable mortality risk estimate after heart failure hospitalisation. Research use only.">
-<!-- Keep the tool reachable by link but out of search results while it is unpublished
-     and prospectively unvalidated. Remove on acceptance. -->
+<title>EXACT-HF Risk Calculator</title>
+<meta name="description" content="30-day and 1-year mortality after heart failure hospitalisation. Research use only.">
+<!-- Reachable by link but kept out of search results while unpublished and prospectively
+     unvalidated. Remove on acceptance. -->
 <meta name="robots" content="noindex, nofollow">
-<!-- CSP fallback for hosts that ignore _headers (GitHub Pages). X-Frame-Options has no
-     meta equivalent, so framing protection only applies on hosts that honour _headers. -->
+<!-- CSP as meta so it survives on hosts that ignore _headers (GitHub Pages). frame-ancestors
+     carries the framing protection that X-Frame-Options cannot express in a meta tag. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  :root {
-    --paper:#F2F5F4; --surface:#FFFFFF; --ink:#17242A; --muted:#5A6B70;
-    --hairline:#D8E0DE; --hairline-2:#E9EEEC;
-    --accent:#0E5B62; --accent-soft:#DCEAEA;
-    --clay:#A8452F; --clay-soft:#F3E2DD;
-    --amber:#8A6A1F; --amber-soft:#F0E9D6;
-    --serif:"Newsreader",Georgia,serif;
+  :root{
+    --paper:#F3F5F5; --surface:#FFF; --ink:#16232A; --muted:#66787D;
+    --line:#DCE3E2; --line-2:#EDF1F0;
+    --accent:#0E5B62; --accent-soft:#E2EEEE;
+    --clay:#A8452F; --clay-soft:#F6E6E1;
+    --amber:#8A6A1F;
     --sans:"Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --paper:#101718; --surface:#17201F; --ink:#E4EAE8; --muted:#93A5A6;
-      --hairline:#2B3838; --hairline-2:#212C2C;
-      --accent:#6FBFC4; --accent-soft:#1B3234;
-      --clay:#E0846A; --clay-soft:#33211C;
-      --amber:#D6B45E; --amber-soft:#2E2718;
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#0F1516; --surface:#18201F; --ink:#E5EAE9; --muted:#94A5A6;
+      --line:#2A3736; --line-2:#202A2A;
+      --accent:#6FBFC4; --accent-soft:#1A3133;
+      --clay:#E28A70; --clay-soft:#32211C;
+      --amber:#D6B45E;
     }
   }
-  * { box-sizing: border-box; }
-  html { color-scheme: light dark; }
-  body {
-    margin:0; background:var(--paper); color:var(--ink);
-    font-family:var(--sans); font-size:16px; line-height:1.6;
-    -webkit-font-smoothing:antialiased;
+  *{box-sizing:border-box}
+  html{color-scheme:light dark}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
   }
-  .wrap { max-width:1080px; margin:0 auto; padding:36px 22px 80px; }
+  .wrap{max-width:960px;margin:0 auto;padding:26px 20px 60px}
 
-  header { border-bottom:2px solid var(--ink); padding-bottom:20px; }
-  .eyebrow {
-    font-family:var(--mono); font-size:10.5px; letter-spacing:.13em;
-    text-transform:uppercase; color:var(--accent); margin:0 0 8px;
-  }
-  h1 { font-family:var(--serif); font-weight:500; font-size:clamp(27px,4.4vw,38px);
-       line-height:1.12; margin:0 0 10px; letter-spacing:-.015em; }
-  .sub { color:var(--muted); margin:0; max-width:64ch; font-size:16.5px; }
+  .top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+  h1{font-size:20px;font-weight:600;margin:0;letter-spacing:-.01em}
+  h1 span{color:var(--muted);font-weight:400}
+  .ver{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
 
-  .warn {
-    margin-top:18px; background:var(--clay-soft); border-left:3px solid var(--clay);
-    padding:14px 18px; font-size:14.5px; line-height:1.5;
+  .notice{
+    margin-top:12px;background:var(--clay-soft);border-left:3px solid var(--clay);
+    padding:9px 13px;font-size:13.5px;
   }
-  .warn strong { color:var(--clay); }
+  .notice b{color:var(--clay)}
 
-  .grid { display:grid; grid-template-columns:1fr 340px; gap:34px; margin-top:34px; align-items:start; }
-  @media (max-width:860px){ .grid { grid-template-columns:1fr; } }
+  .grid{display:grid;grid-template-columns:1fr 260px;gap:22px;margin-top:20px;align-items:start}
+  @media (max-width:780px){ .grid{grid-template-columns:1fr} .out{order:-1;position:static} }
 
-  h2 {
-    font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:.15em;
-    text-transform:uppercase; color:var(--muted); margin:0 0 4px;
-    padding-bottom:9px; border-bottom:1px solid var(--hairline);
+  .panel{background:var(--surface);border:1px solid var(--line);padding:16px 18px}
+  .panel + .panel{margin-top:14px}
+  .ptitle{
+    font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;
   }
-  .fieldset { margin-bottom:28px; }
-  .hint { font-size:13.5px; color:var(--muted); margin:10px 0 14px; }
 
-  .fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; }
-  .field { display:flex; flex-direction:column; gap:5px; }
-  .field label { font-size:13.5px; font-weight:500; }
-  .field .unit { color:var(--muted); font-weight:400; }
-  input[type=number], select {
-    font-family:var(--mono); font-size:15px; padding:9px 11px;
-    border:1px solid var(--hairline); border-radius:3px;
-    background:var(--surface); color:var(--ink); width:100%;
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:11px}
+  .f{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .f label{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .f input,.f select{
+    font-family:var(--mono);font-size:15px;padding:7px 9px;width:100%;
+    border:1px solid var(--line);border-radius:3px;background:var(--paper);color:var(--ink);
   }
-  input[type=number]:focus, select:focus, button:focus-visible, .toggle:focus-within {
-    outline:2px solid var(--accent); outline-offset:1px;
-  }
-  .oob { border-color:var(--amber); }
-  .flag { font-size:12px; color:var(--amber); font-family:var(--mono); min-height:1em; }
+  .f input:focus,.f select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .f input.oob{border-color:var(--amber);color:var(--amber)}
 
-  .toggles { display:flex; flex-direction:column; gap:8px; }
-  .toggle {
-    display:flex; align-items:center; gap:11px; padding:11px 13px;
-    background:var(--surface); border:1px solid var(--hairline); border-radius:3px;
-    cursor:pointer; font-size:14.5px;
+  .meds{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2)}
+  .chip{
+    display:inline-flex;align-items:center;gap:7px;padding:7px 11px;font-size:13.5px;
+    border:1px solid var(--line);border-radius:100px;cursor:pointer;user-select:none;
   }
-  .toggle input { width:17px; height:17px; accent-color:var(--accent); cursor:pointer; margin:0; }
+  .chip input{accent-color:var(--accent);width:15px;height:15px;margin:0;cursor:pointer}
+  .chip:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+  .chip:focus-within{outline:2px solid var(--accent);outline-offset:1px}
 
-  /* results */
-  .results { position:sticky; top:22px; display:flex; flex-direction:column; gap:16px; }
-  .card { background:var(--surface); border:1px solid var(--hairline); padding:20px; }
-  .card.primary { border-left:3px solid var(--accent); }
-  .rlabel {
-    font-family:var(--mono); font-size:10px; letter-spacing:.11em;
-    text-transform:uppercase; color:var(--muted); margin:0 0 6px;
-  }
-  .rvalue {
-    font-family:var(--serif); font-size:46px; line-height:1;
-    font-variant-numeric:tabular-nums; margin:0;
-  }
-  .rmeta { font-size:13px; color:var(--muted); margin:9px 0 0; }
-  .bar { height:6px; background:var(--hairline-2); margin-top:13px; position:relative; overflow:hidden; }
-  .bar > i { display:block; height:100%; background:var(--accent); transition:width .18s ease; }
-  .bar.high > i { background:var(--clay); }
-  .band {
-    display:inline-block; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
-    text-transform:uppercase; padding:3px 7px; border-radius:2px; margin-top:12px;
-  }
-  .band.high { background:var(--clay-soft); color:var(--clay); }
-  .band.low  { background:var(--accent-soft); color:var(--accent); }
+  .out{position:sticky;top:18px;display:flex;flex-direction:column;gap:12px}
+  .res{background:var(--surface);border:1px solid var(--line);padding:16px 18px}
+  .res.hi{border-left:3px solid var(--clay)}
+  .res.lo{border-left:3px solid var(--accent)}
+  .rk{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin:0}
+  .rv{font-size:38px;font-weight:600;line-height:1.1;margin:2px 0 0;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .rn{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+  .rn b{font-weight:500}
+  .hi .rn b{color:var(--clay)}
+  .lo .rn b{color:var(--accent)}
 
-  /* gdmt */
-  .pillars { display:flex; flex-direction:column; gap:7px; margin-top:12px; }
-  .pillar {
-    display:flex; align-items:center; gap:10px; font-size:14px;
-    padding:8px 11px; border:1px solid var(--hairline); border-radius:3px; cursor:pointer;
+  details{border-top:1px solid var(--line-2);padding-top:10px;margin-top:12px}
+  details:first-of-type{border-top:0;padding-top:0;margin-top:0}
+  summary{
+    cursor:pointer;font-size:13px;color:var(--accent);list-style:none;
+    display:flex;align-items:center;gap:6px;
   }
-  .pillar input { accent-color:var(--accent); width:16px; height:16px; margin:0; cursor:pointer; }
-  .pillar.missing { border-color:var(--clay); background:var(--clay-soft); }
-  .gsum { font-size:14.5px; margin:14px 0 0; }
-  .gsum b { color:var(--clay); }
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"\25B8";font-size:10px;transition:transform .15s}
+  details[open] summary::before{transform:rotate(90deg)}
+  summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  details p,details li{font-size:13px;color:var(--muted);line-height:1.5}
+  details p{margin:9px 0 0}
+  details ul{margin:9px 0 0;padding-left:17px;display:flex;flex-direction:column;gap:6px}
+  details .tag{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  details .tag.gap{color:var(--clay)}
 
-  button {
-    font-family:var(--sans); font-size:14px; font-weight:500; padding:9px 15px;
-    border:1px solid var(--hairline); background:var(--surface); color:var(--ink);
-    border-radius:3px; cursor:pointer;
-  }
-  button:hover { border-color:var(--accent); color:var(--accent); }
-  .actions { display:flex; gap:9px; flex-wrap:wrap; margin-top:6px; }
+  .pill{display:flex;align-items:center;gap:9px;font-size:13.5px;padding:6px 0;cursor:pointer}
+  .pill input{accent-color:var(--accent);width:15px;height:15px;margin:0;cursor:pointer}
+  .pill.miss span{color:var(--clay)}
 
-  table.perf { border-collapse:collapse; width:100%; font-size:13px; margin-top:12px; }
-  table.perf th, table.perf td {
-    text-align:right; padding:7px 9px; border-bottom:1px solid var(--hairline-2);
-    font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12.5px;
+  table{border-collapse:collapse;width:100%;margin-top:9px}
+  td,th{
+    font-family:var(--mono);font-size:11.5px;text-align:right;padding:4px 0;
+    color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums;
   }
-  table.perf th:first-child, table.perf td:first-child { text-align:left; font-family:var(--sans); font-size:13.5px; }
-  table.perf thead th {
-    font-size:10px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--muted); border-bottom:1px solid var(--hairline);
-  }
-  ul.interp { margin:10px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:8px; }
-  ul.interp li { font-size:13.5px; line-height:1.5; color:var(--muted); }
-  ul.interp strong { color:var(--ink); }
-  .stamp {
-    font-family:var(--mono); font-size:10.5px; color:var(--muted);
-    margin:12px 0 0; padding-top:10px; border-top:1px solid var(--hairline-2);
-  }
-  footer {
-    margin-top:52px; padding-top:18px; border-top:1px solid var(--hairline);
-    font-size:13px; color:var(--muted); max-width:72ch;
-  }
-  footer a { color:var(--accent); }
-  code { font-family:var(--mono); font-size:.9em; }
-  @media (prefers-reduced-motion: reduce){ *{transition:none!important;} }
+  td:first-child,th:first-child{text-align:left;font-family:var(--sans);font-size:12.5px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <header>
-    <p class="eyebrow">EXACT-HF &middot; ten-variable model</p>
-    <h1>Mortality risk after heart failure hospitalisation</h1>
-    <p class="sub">Estimates 30-day and 1-year all-cause mortality from ten variables recorded in routine care. Developed in three Singapore hospitals and validated in five independent ones.</p>
-    <div class="warn">
-      <strong>Research use only.</strong> This model has not been prospectively or interventionally validated, and is not a medical device. It must not be used alone to guide care for an individual patient. It was developed in a predominantly HFrEF, multi-ethnic Singaporean cohort; performance elsewhere, and in HFpEF, is untested. Nothing entered here is stored, transmitted or recorded — this page is not a patient record, and a screenshot of it is not documentation.
-    </div>
-  </header>
-
-  <div class="grid">
-    <main>
-      <section class="fieldset">
-        <h2>Discharge medications</h2>
-        <p class="hint">These are among the strongest predictors in the model, but they are <strong>prognostic markers, not causal levers</strong>. Non-prescription often reflects a clinical judgement that the patient could not tolerate the drug. Toggling them here does <em>not</em> estimate the effect of prescribing.</p>
-        <div class="toggles" id="toggles"></div>
-      </section>
-
-      <section class="fieldset">
-        <h2>Clinical and laboratory values</h2>
-        <p class="hint">Prefilled with development-cohort medians as a worked example — replace with your patient's values. A field left blank falls back to that same median, matching how the model handles missing data.</p>
-        <div class="fields" id="fields"></div>
-        <div class="actions">
-          <button type="button" id="reset">Reset to medians</button>
-        </div>
-      </section>
-
-      <section class="fieldset">
-        <h2>Guideline-directed therapy audit</h2>
-        <p class="hint">Independent of the risk estimate above — this panel does not feed the model. Among externally validated high-risk patients with LVEF &lt;40%, a mean of 3.08 of these four pillars were absent, against 2.13 across all HFrEF patients.</p>
-        <div class="pillars" id="pillars"></div>
-        <p class="gsum" id="gsum"></p>
-      </section>
-    </main>
-
-    <aside class="results">
-      <div class="card primary">
-        <p class="rlabel">30-day all-cause mortality</p>
-        <p class="rvalue" id="r30">—</p>
-        <div class="bar" id="bar30"><i style="width:0"></i></div>
-        <span class="band" id="band30"></span>
-        <p class="rmeta" id="m30"></p>
-      </div>
-      <div class="card">
-        <p class="rlabel">1-year all-cause mortality</p>
-        <p class="rvalue" id="r365">—</p>
-        <div class="bar" id="bar365"><i style="width:0"></i></div>
-        <span class="band" id="band365"></span>
-        <p class="rmeta" id="m365"></p>
-      </div>
-      <div class="card">
-        <p class="rlabel">How to read this</p>
-        <ul class="interp">
-          <li>These are <strong>absolute</strong> risks of death from any cause, not relative risks and not heart-failure-specific mortality.</li>
-          <li>The threshold is the model's <strong>Youden point</strong> — a statistical operating point that balances sensitivity against specificity. It is <em>not</em> a treatment threshold, and crossing it does not by itself indicate any particular action.</li>
-          <li>Compare against the source cohort: <strong>4.2%</strong> died within 30 days and <strong>22.6%</strong> within a year. A result near those numbers is typical, not reassuring.</li>
-          <li>"Below threshold" is not a safety guarantee. Most deaths in absolute number still occur in patients who were not flagged.</li>
-          <li>The estimate describes patients resembling this one. It cannot tell you what will happen to this individual.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <p class="rlabel">External validation</p>
-        <table class="perf" id="perf"></table>
-        <p class="stamp" id="stamp"></p>
-      </div>
-    </aside>
+  <div class="top">
+    <h1>EXACT-HF <span>&middot; mortality after HF admission</span></h1>
+    <span class="ver" id="ver"></span>
   </div>
 
-  <footer>
-    <p>Elastic-net logistic regression on ten SHAP-ranked predictors. Coefficients, imputation medians, winsorising bounds and scaler constants are generated by <code>step28_export_calculator_model.py</code> and shipped in <code>model.json</code> — the page computes entirely in your browser and sends nothing anywhere.</p>
-    <p style="margin-top:10px">Reference event rates in the source cohort: 30-day 4.2%, 1-year 22.6%. Risk bands use each model's Youden threshold from external validation.</p>
-  </footer>
+  <p class="notice"><b>Research use only.</b> Not prospectively validated, not a medical device, not a patient record. Nothing you type leaves this page.</p>
+
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <p class="ptitle">Patient</p>
+        <div class="fields" id="fields"></div>
+        <div class="meds" id="meds"></div>
+      </div>
+
+      <div class="panel">
+        <details>
+          <summary>Guideline-directed therapy <span class="tag" id="gtag"></span></summary>
+          <div id="pillars"></div>
+          <p id="gnote"></p>
+        </details>
+      </div>
+
+      <div class="panel">
+        <details>
+          <summary>How to read this</summary>
+          <ul>
+            <li>Absolute risk of death from any cause &mdash; not relative risk, not HF-specific.</li>
+            <li>The threshold is a statistical operating point, <strong>not</strong> a treatment threshold.</li>
+            <li>Source cohort: 4.2% died by 30 days, 22.6% by one year. A similar result is typical, not reassuring.</li>
+            <li>Below threshold is not a safety guarantee &mdash; most deaths occur in patients who were not flagged.</li>
+            <li>Blank fields fall back to the training median, as in development.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>Why medications appear here</summary>
+          <p>Beta-blocker and loop diuretic are among the strongest predictors, but they are prognostic markers, not causal levers &mdash; non-prescription usually reflects a judgement that the patient could not tolerate the drug. Toggling them does not estimate the effect of prescribing.</p>
+        </details>
+        <details>
+          <summary>Model and validation</summary>
+          <p>Elastic-net logistic regression on ten SHAP-ranked predictors. Developed in three Singapore hospitals, validated in five independent ones (n=5,016). Predominantly HFrEF; performance in HFpEF and outside Singapore is untested.</p>
+          <table id="perf"></table>
+        </details>
+      </div>
+    </div>
+
+    <div class="out">
+      <div class="res" id="c30">
+        <p class="rk">30-day mortality</p>
+        <p class="rv" id="v30">&mdash;</p>
+        <p class="rn" id="n30"></p>
+      </div>
+      <div class="res" id="c365">
+        <p class="rk">1-year mortality</p>
+        <p class="rv" id="v365">&mdash;</p>
+        <p class="rn" id="n365"></p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="model.js"></script>
 <script>
 (function () {
   var M = window.EXACTHF_MODEL;
-  if (!M) { document.querySelector('.results').innerHTML = '<div class="card"><p>model.js failed to load.</p></div>'; return; }
+  if (!M) { document.getElementById('v30').textContent = 'error'; return; }
 
-  var NYHA = [['1','I — no limitation'],['2','II — slight limitation'],['3','III — marked limitation'],['4','IV — symptoms at rest']];
-  var binaries = M.features.filter(function (f) { return M.meta[f].kind === 'binary'; });
-  var others   = M.features.filter(function (f) { return M.meta[f].kind !== 'binary'; });
+  var NYHA = [['1','I'],['2','II'],['3','III'],['4','IV']];
+  var meds   = M.features.filter(function(f){ return M.meta[f].kind === 'binary'; });
+  var others = M.features.filter(function(f){ return M.meta[f].kind !== 'binary'; });
 
-  // ---- build the form -------------------------------------------------------
-  var tog = document.getElementById('toggles');
-  binaries.forEach(function (f) {
+  // Shorter than the model metadata labels: this panel is scanned, not read.
+  var SHORT = {
+    na:'Sodium', Age:'Age', urea:'Urea', bmi:'BMI',
+    mean_blood_presuure:'MAP', bp_dias:'Diastolic BP', nyha:'NYHA',
+    Betablocker_Prescribed:'Beta-blocker', Loop_Diuretic_Prescribed:'Loop diuretic',
+    Statin_Prescribed:'Statin'
+  };
+
+  others.forEach(function (f) {
+    var m = M.meta[f], p = M.preprocess[f], d = document.createElement('div');
+    d.className = 'f';
+    var lab = SHORT[f] + (m.unit ? ' (' + m.unit + ')' : '');
+    d.innerHTML = m.kind === 'nyha'
+      ? '<label for="x'+f+'">'+lab+'</label><select id="x'+f+'">' + NYHA.map(function(o){
+          return '<option value="'+o[0]+'"'+(+o[0]===p.median?' selected':'')+'>'+o[1]+'</option>'; }).join('') + '</select>'
+      : '<label for="x'+f+'">'+lab+'</label><input id="x'+f+'" type="number" step="'+(m.step||1)+'" value="'+p.median+'">';
+    document.getElementById('fields').appendChild(d);
+  });
+
+  meds.forEach(function (f) {
     var l = document.createElement('label');
-    l.className = 'toggle';
-    l.innerHTML = '<input type="checkbox" id="f_' + f + '"><span>' + M.meta[f].label + '</span>';
-    tog.appendChild(l);
+    l.className = 'chip';
+    l.innerHTML = '<input type="checkbox" id="x'+f+'"><span>'+SHORT[f]+'</span>';
+    document.getElementById('meds').appendChild(l);
     l.querySelector('input').checked = M.preprocess[f].median >= 0.5;
   });
 
-  var fields = document.getElementById('fields');
-  others.forEach(function (f) {
-    var m = M.meta[f], p = M.preprocess[f];
-    var d = document.createElement('div');
-    d.className = 'field';
-    var unit = m.unit ? ' <span class="unit">' + m.unit + '</span>' : '';
-    if (m.kind === 'nyha') {
-      d.innerHTML = '<label for="f_' + f + '">' + m.label + '</label>' +
-        '<select id="f_' + f + '">' + NYHA.map(function (o) {
-          return '<option value="' + o[0] + '"' + (+o[0] === p.median ? ' selected' : '') + '>' + o[1] + '</option>';
-        }).join('') + '</select><span class="flag"></span>';
-    } else {
-      d.innerHTML = '<label for="f_' + f + '">' + m.label + unit + '</label>' +
-        '<input type="number" id="f_' + f + '" step="' + (m.step || 1) + '" value="' + p.median + '">' +
-        '<span class="flag"></span>';
-    }
-    fields.appendChild(d);
-  });
-
-  // ---- risk -----------------------------------------------------------------
-  function readValue(f) {
-    var el = document.getElementById('f_' + f);
+  function val(f) {
+    var el = document.getElementById('x' + f);
     if (M.meta[f].kind === 'binary') return el.checked ? 1 : 0;
     var v = parseFloat(el.value);
     return isNaN(v) ? null : v;
@@ -287,117 +233,76 @@
     var o = M.outcomes[outcome], z = o.intercept;
     M.features.forEach(function (f) {
       var p = M.preprocess[f], x = vals[f];
-      if (x === null) x = p.median;                          // same fallback as training
-      x = Math.min(Math.max(x, p.clip_min), p.clip_max);     // winsorise as in step2
+      if (x === null) x = p.median;                        // same fallback as training
+      x = Math.min(Math.max(x, p.clip_min), p.clip_max);   // winsorise as in step2
       z += o.coef[f] * (x - o.scaler_mean[f]) / o.scaler_scale[f];
     });
     return 1 / (1 + Math.exp(-z));
   }
 
-  function paint(key, outcome, vals) {
-    var p = risk(outcome, vals);
-    var perf = M.outcomes[outcome].performance.external;
-    var high = p >= perf.threshold;
-    var pct = (p * 100);
-
-    document.getElementById('r' + key).textContent = (pct < 10 ? pct.toFixed(1) : pct.toFixed(0)) + '%';
-    var bar = document.getElementById('bar' + key);
-    // Scale the bar against 4x the threshold so ordinary risks stay readable.
-    bar.querySelector('i').style.width = Math.max(1, Math.min(100, (p / (perf.threshold * 4)) * 100)) + '%';
-    bar.className = 'bar' + (high ? ' high' : '');
-    var band = document.getElementById('band' + key);
-    band.textContent = high ? 'Above Youden threshold' : 'Below Youden threshold';
-    band.className = 'band ' + (high ? 'high' : 'low');
-    document.getElementById('m' + key).textContent =
-      'Threshold ' + (perf.threshold * 100).toFixed(1) + '% · cohort rate ' + (key === '30' ? '4.2%' : '22.6%');
+  function show(key, outcome, vals) {
+    var p = risk(outcome, vals), t = M.outcomes[outcome].performance.external.threshold;
+    var hi = p >= t, pct = p * 100;
+    document.getElementById('v' + key).textContent = (pct < 10 ? pct.toFixed(1) : pct.toFixed(0)) + '%';
+    document.getElementById('c' + key).className = 'res ' + (hi ? 'hi' : 'lo');
+    document.getElementById('n' + key).innerHTML =
+      '<b>' + (hi ? 'Above' : 'Below') + '</b> threshold ' + (t * 100).toFixed(1) + '%';
   }
 
-  function flagRange() {
-    others.forEach(function (f) {
-      var el = document.getElementById('f_' + f);
-      if (M.meta[f].kind === 'nyha') return;
-      var p = M.preprocess[f], v = parseFloat(el.value), flag = el.parentNode.querySelector('.flag');
-      if (!isNaN(v) && (v < p.clip_min || v > p.clip_max)) {
-        el.classList.add('oob');
-        flag.textContent = 'outside training range — clamped to ' +
-          (v < p.clip_min ? p.clip_min.toFixed(1) : p.clip_max.toFixed(1));
-      } else {
-        el.classList.remove('oob');
-        flag.textContent = el.value === '' ? 'blank — using median ' + p.median : '';
-      }
+  var PILLARS = [['raasi','ACEi / ARB / ARNI'],['bb','Beta-blocker'],
+                 ['mra','MRA'],['sglt2','SGLT2 inhibitor']];
+  var pw = document.getElementById('pillars');
+  PILLARS.forEach(function (p) {
+    var l = document.createElement('label');
+    l.className = 'pill'; l.id = 'q' + p[0];
+    l.innerHTML = '<input type="checkbox" data-p="'+p[0]+'"><span>'+p[1]+'</span>';
+    pw.appendChild(l);
+  });
+  pw.addEventListener('change', function (e) {
+    if (e.target.dataset.p === 'bb') document.getElementById('xBetablocker_Prescribed').checked = e.target.checked;
+    update();
+  });
+
+  function gdmt() {
+    pw.querySelector('[data-p=bb]').checked = document.getElementById('xBetablocker_Prescribed').checked;
+    var missing = 0;
+    PILLARS.forEach(function (p) {
+      var on = pw.querySelector('[data-p=' + p[0] + ']').checked;
+      document.getElementById('q' + p[0]).className = 'pill' + (on ? '' : ' miss');
+      if (!on) missing++;
     });
+    var tag = document.getElementById('gtag');
+    tag.textContent = missing ? missing + ' of 4 absent' : 'all four';
+    tag.className = 'tag' + (missing ? ' gap' : '');
+    document.getElementById('gnote').textContent = missing
+      ? 'Check whether each absence reflects a documented contraindication before treating it as a gap. Renal and haemodynamic reasons dominated in the source cohort.'
+      : '';
   }
 
   function update() {
     var vals = {};
-    M.features.forEach(function (f) { vals[f] = readValue(f); });
-    paint('30', '30-day', vals);
-    paint('365', '1-year', vals);
-    flagRange();
-    syncPillars();
+    M.features.forEach(function (f) { vals[f] = val(f); });
+    show('30', '30-day', vals);
+    show('365', '1-year', vals);
+    others.forEach(function (f) {
+      if (M.meta[f].kind === 'nyha') return;
+      var el = document.getElementById('x' + f), p = M.preprocess[f], v = parseFloat(el.value);
+      el.classList.toggle('oob', !isNaN(v) && (v < p.clip_min || v > p.clip_max));
+    });
+    gdmt();
   }
 
-  // ---- GDMT audit (deliberately separate from the risk model) ---------------
-  var PILLARS = [
-    ['raasi', 'ACEi / ARB / ARNI'],
-    ['bb',    'Beta-blocker'],
-    ['mra',   'Mineralocorticoid-receptor antagonist'],
-    ['sglt2', 'SGLT2 inhibitor']
-  ];
-  var pw = document.getElementById('pillars');
-  PILLARS.forEach(function (p) {
-    var l = document.createElement('label');
-    l.className = 'pillar';
-    l.id = 'p_' + p[0];
-    l.innerHTML = '<input type="checkbox" data-p="' + p[0] + '"><span>' + p[1] + '</span>';
-    pw.appendChild(l);
-  });
-  pw.addEventListener('change', function (e) {
-    // Beta-blocker is shared with the risk model; keep the two in step.
-    if (e.target.dataset.p === 'bb') document.getElementById('f_Betablocker_Prescribed').checked = e.target.checked;
-    update();
-  });
-
-  function syncPillars() {
-    var bbEl = pw.querySelector('[data-p=bb]');
-    bbEl.checked = document.getElementById('f_Betablocker_Prescribed').checked;
-    var missing = [];
-    PILLARS.forEach(function (p) {
-      var cb = pw.querySelector('[data-p=' + p[0] + ']');
-      var row = document.getElementById('p_' + p[0]);
-      row.className = 'pillar' + (cb.checked ? '' : ' missing');
-      if (!cb.checked) missing.push(p[1]);
-    });
-    var g = document.getElementById('gsum');
-    g.innerHTML = missing.length === 0
-      ? 'All four pillars prescribed.'
-      : '<b>' + missing.length + ' of 4 pillars absent</b> — ' + missing.join(', ') +
-        '. Confirm whether each reflects a documented contraindication before treating it as a gap.';
-  }
-
-  document.getElementById('reset').addEventListener('click', function () {
-    M.features.forEach(function (f) {
-      var el = document.getElementById('f_' + f), p = M.preprocess[f];
-      if (M.meta[f].kind === 'binary') el.checked = p.median >= 0.5; else el.value = p.median;
-    });
-    PILLARS.forEach(function (p) { pw.querySelector('[data-p=' + p[0] + ']').checked = (p[0] === 'bb'); });
-    update();
-  });
-
-  // ---- performance table ----------------------------------------------------
-  var t = document.getElementById('perf');
-  t.innerHTML = '<thead><tr><th>Outcome</th><th>AUROC</th><th>Slope</th></tr></thead><tbody>' +
-    ['30-day', '1-year'].map(function (o) {
+  document.getElementById('perf').innerHTML =
+    '<tr><th>External</th><th>AUROC</th><th>Slope</th></tr>' +
+    ['30-day','1-year'].map(function (o) {
       var e = M.outcomes[o].performance.external;
-      return '<tr><td>' + o + '</td><td>' + e.auroc.toFixed(3) + '</td><td>' + e.slope.toFixed(2) + '</td></tr>';
-    }).join('') + '</tbody>';
-
-  document.getElementById('stamp').textContent =
-    'model v' + M.version + ' · ' + M.digest + ' · built ' + M.generated;
+      return '<tr><td>'+o+'</td><td>'+e.auroc.toFixed(3)+'</td><td>'+e.slope.toFixed(2)+'</td></tr>';
+    }).join('');
+  document.getElementById('ver').textContent = 'v' + M.version + ' · ' + M.digest;
 
   document.getElementById('fields').addEventListener('input', update);
-  document.getElementById('toggles').addEventListener('change', update);
-  PILLARS.forEach(function (p) { if (p[0] === 'bb') pw.querySelector('[data-p=bb]').checked = true; });
+  document.getElementById('meds').addEventListener('change', update);
+  pw.querySelector('[data-p=bb]').checked = true;
   update();
 })();
 </script>
